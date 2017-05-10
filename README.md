@@ -1,5 +1,5 @@
 # hungarian
-This is a simple implementation of hungarian method.
+This is a simple implementation of hungarian method.\n
 Brief Description: the hungarian method is implemented by graph theory, and Depth First Search Algorithm.
 Last Modified: 2017/05/08
 Author: Jian
