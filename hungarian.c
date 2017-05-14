@@ -7,16 +7,21 @@ and Depth First Search Algorithm.*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#define rows 5
-#define cols 5
+#define rows 10
+#define cols 10
 #define INF 0x7ffffff
 int matrix[rows][cols] = 
 {
-{20,15,18,20,25},
-{18,20,12,14,15},
-{21,23,25,27,25},
-{17,18,21,23,20},
-{18,18,16,19,20},
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-15, -6, -13, -6,-6,-6,-6,-6,-6,-6}, 
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-21 ,-6, -6 ,-6 ,-6,-6,-6,-6,-6,-6},
+{-6 ,-6, -10, -6 ,-6,-6,-6,-6,-6,-6},
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-6 ,-6, -6, -6 ,-6,-6,-6,-6,-6,-6},
+{-19 ,-6, -7, -6 ,-6,-6,-6,-6,-6,-6},
 };
 int map[rows+1][cols+1];
 int vis[2*rows+1];
@@ -36,35 +41,51 @@ cover the corresponding edges.*/
 int set[2*rows] = {0}; 
 
 void DFS(int x){
-	int i;
-	vis[x] = 1;
+	int i,j;
 	newpos[now++] = x;
+	vis[x] = 1;
 	for(i = 1; i < 2*rows + 1; i++){
-
-		if(!vis[i] && test[x-1][i-1] == 1) {
+		if(vis[i]==0 && test[x-1][i-1] == 1) {
+			printf("x:%d i:%d\n",x,i);
 			parent[i-1] = x;
-			DFS(i);
-			
+			DFS(i);	
 		}
 	}
 }
+
 int min_vertex_cover(){
 	int s[2*rows] = {0};
 	int ans2=0;
 	int i ;
 	int t;
-	for( i = 2*rows -1 ;i >= 1; i--){
-		/*inverse node sequence of nodes*/
-		t = newpos[i];
-		/*if the node is the root of this tree, we will skip the searching node this time.*/
-		if(!s[t-1] && !s[parent[t-1]-1] && parent[t-1] != 0){
-			set[parent[t-1]-1] = 1;
-			ans2 ++;
-			s[t-1] = 1;
-			s[parent[t-1]-1] = 1;
+	int mark_row[rows] = {0};
+	int mark_col[cols] = {0};
+	memset(set,0,sizeof(set));
+	for(i=rows+1;i<2*rows+1;i++){
+		memset(vis,0,sizeof(vis));
+		if(max_match(i)) ans2++;
+	}
+	for(i=rows;i<2*rows;i++){
+		if(set[i] == 0){
+			mark_row[i-rows] = 1;
+			for(t=1;t<cols+1;t++){
+				if(map[i-rows+1][t] == 1){
+					mark_col[t-1] = 1;
+					mark_row[match[t]-rows-1] = 1;
+				}
+			}
 		}
 	}
-	
+	memset(set,0,sizeof(set));
+	for(i=0;i<rows;i++){
+		if(mark_row[i] != 1){set[i] = 1;}
+		if(mark_col[i] == 1){set[i+cols] = 1;}
+	}
+	for(i=0;i<2*rows;i++){
+		printf("%d ",set[i]);
+	}
+	printf("\n");
+
 	return ans2;
 }
 int max_match(int p){
@@ -73,6 +94,7 @@ int max_match(int p){
 		if(!vis[i] && map[p-cols][i]){
 			vis[i] = 1;
 			if(!match[i] || max_match(match[i])){
+				set[p-1] = 1;
 				match[i] = p;
 				return 1; 
 			}
@@ -86,7 +108,7 @@ int main(){
 	int i,j;
 	int ans=0;
 	int min;
-	int MVC
+	int MVC;
 	int node_num = 0;
 	/*Initialize the row_minimum and col_minimum because of hungarian method which 
 	 find the minimum weighted bipartite graph.*/
@@ -112,6 +134,14 @@ int main(){
 			matrix[j][i] -= col_min[i];
 		}
 	}
+	printf("matrix111\n");
+	for(i=0;i<rows;i++){
+		for(j=0;j<cols;j++){
+			printf("%d ",matrix[i][j]);
+		}
+		printf("\n");
+	}
+	//sleep(3);
 	/*********************step 1 and step 2 finish.**************************/
 
 	/*Iteration start*/
@@ -121,6 +151,13 @@ int main(){
 	if the matrix entries is zero, the entry of mapping matrix will be set to 1. 
 	*/
 	iteration:
+	printf("matrix111\n");
+	for(i=0;i<rows;i++){
+		for(j=0;j<cols;j++){
+			printf("%d ",matrix[i][j]);
+		}
+		printf("\n");
+	}
 	now = 0;
 	memset(newpos,0,sizeof(newpos));
 	memset(parent,0,sizeof(parent));
@@ -153,18 +190,36 @@ int main(){
 	/*Use DFS algorithm to search every node. And we create the trees.*/
 	while(1){
 		node_num = 0;
-		if(vis[i] == 0)DFS(i);
+		if(vis[i] == 0){
+		printf("i:%d\n",i);	
+		DFS(i);
+		}
 		for(j=0;j<2*rows;j++){
 			if(newpos[j] > 0) node_num++;
 		}
 		if(node_num == (2*rows)) break;
 	i++;
 	}
+	printf("newpos\n");
+	for(i=0;i<2*rows;i++){
+		printf("%d ",newpos[i]);
+	}
+	printf("\n\n");
+	printf("parent\n");
+	for(i=0;i<2*rows;i++){
+		printf("%d ",parent[i]);
+	}
+	printf("\n\n");
 	MVC = 0;
 	MVC = min_vertex_cover();
 	/*In graph theory, minimum vertex cover is equivalent to maximum matching.
 		If MVC is equal to the number of rows(columns), this program will stop.
 	*/
+	printf("set\n");
+	for(i=0;i<2*rows;i++){
+		printf("%d ",set[i]);
+	}
+	printf("\n");
 	if(MVC == rows){printf("Minimum Vertex Cover is:%d\n",MVC);goto Exit;}
 	min = INF;
 	printf("\n");
@@ -172,6 +227,8 @@ int main(){
 	for(i = 0;i < rows; i++){
 		for(j = 0; j < cols; j++){
 			if(set[i] != 1 && set[j+cols] != 1){
+				printf("i:%d j:%d\n",i,j);
+				//sleep(3);
 				if(min > matrix[i][j]) min = matrix[i][j];
 			}
 		}
@@ -186,11 +243,25 @@ int main(){
 			}
 		}
 	}
+	printf("matrix\n");
+	for(i=0;i<2*rows;i++){
+		for(j=0;j<2*cols;j++){
+			printf("%d ",test[i][j]);
+		}
+		printf("\n");
+	}
+	//sleep(3);
 	/*********end*******/
 	goto iteration;
 
 	Exit:
-
+	printf("matrix\n");
+	for(i=0;i<2*rows;i++){
+		for(j=0;j<2*cols;j++){
+			printf("%d ",test[i][j]);
+		}
+		printf("\n");
+	}
 	printf("The following node is colored.\n");
 	printf("node ");
 	for(i=1;i<2*rows+1;i++){
